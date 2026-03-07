@@ -13,6 +13,7 @@ from ot.utils import list_to_array, get_backend
 
 
 def fused_gromov_wasserstein_incent(M1, M2, C1, C2, p, q, gamma,
+                                    M_spatial,
                                     tau_source,
                                     tau_target,
                                     entropic_reg,
@@ -100,7 +101,7 @@ def fused_gromov_wasserstein_incent(M1, M2, C1, C2, p, q, gamma,
 
     if log:
    
-        res, log = cg_incent(p, q, (1 - alpha) * M1, (1 - alpha) * M2, alpha, f, df, gamma = gamma, tau_source=tau_source, tau_target=tau_target, entropic_reg=entropic_reg, mass_reg=mass_reg, G0 = G0, line_search = line_search, log=True, numItermax=numItermax, stopThr=tol_rel, stopThr2=tol_abs, **kwargs)
+        res, log = cg_incent(p, q, (1 - alpha) * M1, (1 - alpha) * M2, alpha, f, df, M_spatial=M_spatial, beta=beta, gamma = gamma, tau_source=tau_source, tau_target=tau_target, entropic_reg=entropic_reg, mass_reg=mass_reg, G0 = G0, line_search = line_search, log=True, numItermax=numItermax, stopThr=tol_rel, stopThr2=tol_abs, **kwargs)
 
         fgw_dist = log['loss'][-1]
 
@@ -108,7 +109,7 @@ def fused_gromov_wasserstein_incent(M1, M2, C1, C2, p, q, gamma,
         return res, log
 
     else:
-        return cg_incent(p, q, (1 - alpha) * M1, (1 - alpha) * M2, alpha, f, df, gamma = gamma, tau_source=tau_source, tau_target=tau_target, entropic_reg=entropic_reg, mass_reg=mass_reg, G0 = G0, line_search = line_search, log=True, numItermax=numItermax, stopThr=tol_rel, stopThr2=tol_abs, **kwargs)
+        return cg_incent(p, q, (1 - alpha) * M1, (1 - alpha) * M2, alpha, f, df, M_spatial=M_spatial, beta=beta, gamma = gamma, tau_source=tau_source, tau_target=tau_target, entropic_reg=entropic_reg, mass_reg=mass_reg, G0 = G0, line_search = line_search, log=True, numItermax=numItermax, stopThr=tol_rel, stopThr2=tol_abs, **kwargs)
 
 
 def solve_gromov_linesearch(G, deltaG, cost_G, C1, C2, M, reg,
@@ -178,9 +179,9 @@ def solve_gromov_linesearch(G, deltaG, cost_G, C1, C2, M, reg,
     return alpha, 1, cost_G
 
 
-def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solver, line_search,
-                                        tau_source, tau_target,gamma, G0=None, numItermax=6000, stopThr=1e-9,
-                                        stopThr2=1e-9, verbose=False, log=False, **kwargs):
+def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solver, line_search, M_spatial,
+                                        tau_source, tau_target, beta, gamma, G0=None, numItermax=6000,
+                                        stopThr=1e-9, stopThr2=1e-9, verbose=False, log=False, **kwargs):
     r"""
     Solve the general regularized OT problem or its semi-relaxed version with
     conditional gradient or generalized conditional gradient depending on the
@@ -345,6 +346,7 @@ def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solv
 
         return (
             (1-alpha) * (nx.sum(M1 * G) + gamma * nx.sum(M2 * G))
+            + beta * nx.sum(M_spatial * G)
             + alpha * f(G)
             + tau_source * KL_source
             + tau_target * KL_target
@@ -412,8 +414,10 @@ def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solv
 
 
 def cg_incent(a, b, M1, M2, reg, f, df, gamma, G0=None, line_search=line_search_armijo,
-       numItermax=6000, numItermaxEmd=100000, stopThr=1e-9, stopThr2=1e-9,
-       tau_source=10, tau_target=10, verbose=False, log=False, **kwargs):
+       numItermax=6000, numItermaxEmd=100000,
+       stopThr=1e-9, stopThr2=1e-9,
+       M_spatial=None, beta=0.8, tau_source=10, tau_target=10,
+       verbose=False, log=False, **kwargs):
     r"""
     Solve the general regularized OT problem with conditional gradient
 
@@ -514,8 +518,8 @@ def cg_incent(a, b, M1, M2, reg, f, df, gamma, G0=None, line_search=line_search_
         return G, {}
 
     return generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg, None, lp_solver, line_search, G0=G0,
-                                               tau_source=tau_source, tau_target=tau_target,
-                                               gamma = gamma, numItermax=numItermax, stopThr=stopThr,
+                                               M_spatial=M_spatial, beta=beta, tau_source=tau_source, tau_target=tau_target,
+                                               gamma = gamma,  numItermax=numItermax, stopThr=stopThr,
                                                stopThr2=stopThr2, verbose=verbose, log=log, **kwargs)
 
 

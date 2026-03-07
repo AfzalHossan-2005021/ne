@@ -150,6 +150,9 @@ def pairwise_align(
         D_A = D_A.cuda()
         D_B = D_B.cuda()
 
+    spatial_cost = ot.dist(coordinatesA, coordinatesB)
+    M_spatial = nx.from_numpy(spatial_cost)
+
 
     # Calculate gene expression dissimilarity
     # filePath = '/content/drive/MyDrive/Thesis_data_anup/local_data'
@@ -323,6 +326,7 @@ def pairwise_align(
     # D_A: pairwise dist matrix of sliceA spots coords
     # a: initial distribution(uniform) of sliceA spots
     pi, logw = fused_gromov_wasserstein_incent(M1, M2, D_A, D_B, a, b, G_init = G_init, loss_fun='square_loss', alpha= alpha, gamma=gamma,
+                                               M_spatial = M_spatial, beta = beta,
                                                tau_source=tau_source,
                                                tau_target=tau_target,
                                                entropic_reg=entropic_reg,
