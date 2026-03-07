@@ -375,7 +375,7 @@ def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solv
         old_cost_G = cost_G
         # problem linearization
         # gradient descent
-        Mi = M1 + reg1 * df(G)
+        Mi = (1 - reg1) * (M1 + gamma * M2) + beta * M_spatial + reg1 * df(G)
 
         if not (reg2 is None):
             Mi = Mi + reg2 * (1 + nx.log(G))
