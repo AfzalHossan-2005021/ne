@@ -180,7 +180,7 @@ def solve_gromov_linesearch(G, deltaG, cost_G, C1, C2, M, reg,
 
 
 def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solver, line_search, M_spatial,
-                                        tau_source, tau_target, beta, gamma, G0=None, numItermax=6000,
+                                        tau_source, tau_target, beta, gamma, lambda_sparse=0.01, G0=None, numItermax=6000,
                                         stopThr=1e-9, stopThr2=1e-9, verbose=False, log=False, **kwargs):
     r"""
     Solve the general regularized OT problem or its semi-relaxed version with
@@ -340,6 +340,9 @@ def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solv
 
     def cost(G):
         alpha = reg1
+
+        row_norms = nx.sqrt(nx.sum(G**2, axis=1))
+        group_sparse = nx.sum(row_norms)
         
         KL_source = nx.sum(G.sum(axis=1) * nx.log(G.sum(axis=1) / a))
         KL_target = nx.sum(G.sum(axis=0) * nx.log(G.sum(axis=0) / b))
@@ -348,6 +351,7 @@ def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solv
             (1-alpha) * (nx.sum(M1 * G) + gamma * nx.sum(M2 * G))
             + beta * nx.sum(M_spatial * G)
             + alpha * f(G)
+            + lambda_sparse * group_sparse
             + tau_source * KL_source
             + tau_target * KL_target
         )
