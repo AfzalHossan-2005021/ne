@@ -150,9 +150,25 @@ def pairwise_align(
         D_A = D_A.cuda()
         D_B = D_B.cuda()
 
-    spatial_cost = ot.dist(coordinatesA, coordinatesB)
-    M_spatial = nx.from_numpy(spatial_cost)
+    # normalize coordinates
+    coordinatesA = coordinatesA / np.max(np.linalg.norm(coordinatesA, axis=1))
+    coordinatesB = coordinatesB / np.max(np.linalg.norm(coordinatesB, axis=1))
 
+    spatial_cost = ot.dist(coordinatesA, coordinatesB)
+
+    # kNN mask
+    from sklearn.neighbors import NearestNeighbors
+    k = 50
+    nbrs = NearestNeighbors(n_neighbors=k).fit(coordinatesB)
+    dist, idx = nbrs.kneighbors(coordinatesA)
+
+    mask = np.full(spatial_cost.shape, False)
+    for i in range(len(idx)):
+        mask[i, idx[i]] = True
+
+    spatial_cost[~mask] = 1e6
+
+    M_spatial = spatial_cost**2
 
     # Calculate gene expression dissimilarity
     # filePath = '/content/drive/MyDrive/Thesis_data_anup/local_data'
