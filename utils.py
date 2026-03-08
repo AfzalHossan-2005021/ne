@@ -343,6 +343,9 @@ def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solv
 
         row_norms = nx.sqrt(nx.sum(G**2, axis=1))
         group_sparse = nx.sum(row_norms)
+
+        col_norms = nx.sqrt(nx.sum(G**2, axis=0))
+        group_sparse_col = nx.sum(col_norms)
         
         KL_source = nx.sum(G.sum(axis=1) * nx.log(G.sum(axis=1) / a))
         KL_target = nx.sum(G.sum(axis=0) * nx.log(G.sum(axis=0) / b))
@@ -351,7 +354,7 @@ def generic_conditional_gradient_incent(a, b, M1, M2, f, df, reg1, reg2, lp_solv
             (1-alpha) * (nx.sum(M1 * G) + gamma * nx.sum(M2 * G))
             + beta * nx.sum(M_spatial * G)
             + alpha * f(G)
-            + lambda_sparse * group_sparse
+            + lambda_sparse * (group_sparse + group_sparse_col)
             + tau_source * KL_source
             + tau_target * KL_target
         )
