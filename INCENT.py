@@ -24,8 +24,8 @@ def pairwise_align(
     filePath: str,
     tau_source=1e2,
     tau_target=1e2,
-    entropic_reg=0.1,
-    mass_reg=1.0,
+    entropic_reg=1.0,
+    mass_reg=100.0,
     use_rep: Optional[str] = None, 
     G_init = None, 
     a_distribution = None, 
@@ -337,6 +337,11 @@ def pairwise_align(
 
     # print(f"Initial objective gene expr (cosine_dist): {initial_obj_gene}")
     logFile.write(f"Initial objective (cosine_dist): {initial_obj_gene}\n")
+
+
+    print(f"M1 contains NaN: {nx.any(nx.isnan(M1))}")
+    print(f"M2 contains NaN: {nx.any(nx.isnan(M2))}")
+    print(f"M1 max: {nx.max(M1)}, M2 max: {nx.max(M2)}")
     
 
     # D_A: pairwise dist matrix of sliceA spots coords
