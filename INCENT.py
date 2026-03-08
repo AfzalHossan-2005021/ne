@@ -22,10 +22,10 @@ def pairwise_align(
     gamma: float,
     radius: float,
     filePath: str,
-    tau_source=10,
-    tau_target=10,
-    entropic_reg=1e-2,
-    mass_reg=10,
+    tau_source=1e2,
+    tau_target=1e2,
+    entropic_reg=0.1,
+    mass_reg=1.0,
     use_rep: Optional[str] = None, 
     G_init = None, 
     a_distribution = None, 
@@ -166,7 +166,7 @@ def pairwise_align(
     for i in range(len(idx)):
         mask[i, idx[i]] = True
 
-    spatial_cost[~mask] = 1e6
+    spatial_cost[~mask] = 10
 
     M_spatial = spatial_cost**2
 
