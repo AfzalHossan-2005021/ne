@@ -514,7 +514,7 @@ def cg_incent(a, b, M1, M2, reg, f, df, gamma, G0=None, line_search=line_search_
         reg = kwargs.get("entropic_reg", 1e-2)
         reg_m = kwargs.get("mass_reg", 10)
 
-        G = ot.unbalanced.sinkhorn_knopp_unbalanced(
+        G = ot.unbalanced.sinkhorn_stabilized_unbalanced(
             a,
             b,
             M,
